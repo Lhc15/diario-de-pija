@@ -46,17 +46,19 @@ export default function DiarioPage() {
       data: m,
       time: m.time
     })),
-    ...scheduledWorkouts.map(sw => {
-      const workout = userData.workouts.find(w => w.id === sw.workoutId);
-      if (!workout) return null;
-      return {
-        id: `workout-${sw.workoutId}`,
-        type: 'workout' as const,
-        data: workout,
-        time: sw.time,
-        scheduledTime: sw.time
-      };
-    }).filter((a): a is Activity => a !== null)
+    ...scheduledWorkouts
+      .map(sw => {
+        const workout = userData.workouts.find(w => w.id === sw.workoutId);
+        if (!workout) return null;
+        return {
+          id: `workout-${sw.workoutId}`,
+          type: 'workout' as const,
+          data: workout,
+          time: sw.time,
+          scheduledTime: sw.time
+        };
+      })
+      .filter((a): a is NonNullable<typeof a> => a !== null)
   ].sort((a, b) => a.time.localeCompare(b.time));
 
   // Calcular progreso
