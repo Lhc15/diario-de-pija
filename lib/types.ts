@@ -66,18 +66,19 @@ export interface OtherSportRecord {
 
 // Tipos de Métricas
 export interface WeightRecord {
-  date: string;
-  value: number;
+  date: string; // YYYY-MM-DD
+  weight: number; // kg
   notes?: string;
 }
 
 export interface MeasurementRecord {
-  date: string;
-  waist?: number;
-  hips?: number;
-  arms?: number;
-  legs?: number;
-  chest?: number;
+  date: string; // YYYY-MM-DD
+  chest?: number; // cm
+  waist?: number; // cm
+  hips?: number; // cm
+  arms?: number; // cm
+  legs?: number; // cm
+  notes?: string;
 }
 
 export interface NutritionistAppointment {

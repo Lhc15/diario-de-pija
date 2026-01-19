@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useAppStore } from '@/lib/store';
 import { getDateKey } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import DayDetailsModal from '@/components/DayDetailsModal';
 
 export default function CalendarioPage() {
   const { userData } = useAppStore();
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   if (!userData) {
     return (
@@ -51,16 +53,21 @@ export default function CalendarioPage() {
 
   for (let day = 1; day <= daysInMonth; day++) {
     const color = getDayColor(day);
+    const dateKey = getDateKey(new Date(year, month, day));
+    
     days.push(
       <button
         key={day}
-        className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition ${
+        onClick={() => setSelectedDate(dateKey)}
+        className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition hover:scale-110 ${
           color === 'today'
             ? 'bg-primary text-white ring-2 ring-primary/30'
             : color === 'green'
-            ? 'bg-green-500 text-white'
+            ? 'bg-green-500 text-white hover:bg-green-600'
             : color === 'red'
-            ? 'bg-red-500 text-white'
+            ? 'bg-red-500 text-white hover:bg-red-600'
+            : color === 'future'
+            ? 'text-gray-400 hover:bg-gray-50'
             : 'hover:bg-gray-100 text-gray-700'
         }`}
       >
@@ -115,6 +122,15 @@ export default function CalendarioPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de detalles del día */}
+      {selectedDate && (
+        <DayDetailsModal
+          date={selectedDate}
+          userData={userData}
+          onClose={() => setSelectedDate(null)}
+        />
+      )}
     </div>
   );
 }

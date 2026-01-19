@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAppStore, USERS } from '@/lib/store';
+import UserSwitcher from '@/components/UserSwitcher';
 import { 
   BookOpen, 
   Dumbbell, 
@@ -113,6 +114,9 @@ export default function DashboardLayout({
         </div>
       </header>
 
+      {/* User Switcher */}
+      <UserSwitcher />
+
       {/* Main Content */}
       <main className="min-h-[calc(100vh-140px)]">
         {children}
@@ -212,7 +216,7 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
 
           <div className="border-b pb-4">
             <h3 className="font-semibold mb-2">🎨 Color</h3>
-            <p className="text-sm text-primary">● #d97757</p>
+            <p className="text-sm text-primary">● #2596be</p>
           </div>
 
           <div>

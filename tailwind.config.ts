@@ -10,8 +10,8 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#d97757',
-          dark: '#c96647',
+          DEFAULT: '#791732',
+          dark: '#791732',
         },
         background: "var(--background)",
         foreground: "var(--foreground)",

@@ -13,27 +13,34 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Verificar si ya hay sesión
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('current_user');
-      if (savedUser && (savedUser === 'miguel' || savedUser === 'lorena')) {
-        login(savedUser);
-        router.push('/dashboard/diario');
+    const checkSession = async () => {
+      if (typeof window !== 'undefined') {
+        const savedUser = localStorage.getItem('current_user');
+        if (savedUser && (savedUser === 'miguel' || savedUser === 'lorena')) {
+          setIsLoggingIn(true);
+          await login(savedUser);
+          router.push('/dashboard/diario');
+          return;
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+    
+    checkSession();
   }, [login, router]);
 
   // Redirect si está autenticado
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoggingIn) {
       router.push('/dashboard/diario');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, isLoggingIn]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const user = Object.values(USERS).find(
@@ -41,8 +48,15 @@ export default function LoginPage() {
     );
 
     if (user) {
-      login(user.id);
-      router.push('/dashboard/diario');
+      setIsLoggingIn(true);
+      try {
+        await login(user.id);
+        router.push('/dashboard/diario');
+      } catch (err) {
+        console.error('Error en login:', err);
+        setError('Error al iniciar sesión. Inténtalo de nuevo.');
+        setIsLoggingIn(false);
+      }
     } else {
       setError('Eso no es, prueba otra vez 😜');
       setShake(true);
@@ -51,10 +65,13 @@ export default function LoginPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoggingIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-lg">Cargando tu diario...</p>
+        </div>
       </div>
     );
   }
