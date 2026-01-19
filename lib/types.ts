@@ -123,14 +123,17 @@ export interface UserData {
   workouts: Workout[];
   gymSessions: GymSession[]; // ← ARRAY, no objeto
   otherSports: OtherSportRecord[]; // ← Cambiado de otherSportRecords
-  scheduledWorkouts: Record<string, string[]>; // ← dateKey -> workoutIds
+  scheduledWorkouts: Record<string, ScheduledWorkout[]>; // dateKey -> scheduled workouts
   weight: WeightRecord[];
   measurements: MeasurementRecord[];
   nutritionist: Nutritionist;
   dailySummary: Record<string, DailySummary>;
   stats: Stats;
 }
-
+export interface ScheduledWorkout {
+  workoutId: string;
+  time: string; // HH:mm
+}
 // Estado de la app
 export interface AppState {
   currentUser: UserId | null;

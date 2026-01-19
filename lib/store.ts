@@ -27,7 +27,7 @@ const initEmptyUserData = (userId: UserId): UserData => ({
   workouts: [],
   gymSessions: [],
   otherSports: [],
-  scheduledWorkouts: {},
+  scheduledWorkouts: {}, // Ahora será Record<string, ScheduledWorkout[]>
   weight: [],
   measurements: [],
   nutritionist: {
@@ -50,7 +50,36 @@ const loadFromStorage = (userId: UserId): UserData | null => {
   
   try {
     const data = localStorage.getItem(getStorageKey(userId));
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+    
+    const parsed = JSON.parse(data);
+    
+    // MIGRACIÓN: Convertir gymSessions de objeto a array si es necesario
+    if (parsed.gymSessions && !Array.isArray(parsed.gymSessions)) {
+      console.log('Migrando gymSessions de objeto a array...');
+      parsed.gymSessions = [];
+    }
+    
+    // MIGRACIÓN: Renombrar otherSportRecords a otherSports
+    if (parsed.otherSportRecords && !parsed.otherSports) {
+      console.log('Migrando otherSportRecords a otherSports...');
+      parsed.otherSports = Array.isArray(parsed.otherSportRecords) 
+        ? parsed.otherSportRecords 
+        : [];
+      delete parsed.otherSportRecords;
+    }
+    
+    // Asegurar que otherSports existe
+    if (!parsed.otherSports) {
+      parsed.otherSports = [];
+    }
+    
+    // Asegurar que scheduledWorkouts existe
+    if (!parsed.scheduledWorkouts) {
+      parsed.scheduledWorkouts = {};
+    }
+    
+    return parsed;
   } catch {
     return null;
   }
