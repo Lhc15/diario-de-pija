@@ -31,22 +31,23 @@ body {
   padding: 0;
 }
 
-/* Todos los elementos de texto en negro por defecto */
-h1, h2, h3, h4, h5, h6, 
+/* Todos los h en negro por defecto */
+h1, h2, h3, h4, h5, h6 {
+  color: #000000 !important;
+}
+
+/* Labels e inputs en negro (sin afectar divs globalmente) */
 label, 
 input, 
 textarea, 
-select,
-p,
-span,
-div {
+select {
   color: #000000 !important;
 }
 
 /* Inputs y campos de formulario con texto negro */
 input::placeholder,
 textarea::placeholder {
-  color: #6b7280 !important; /* gray-500 para placeholders */
+  color: #6b7280 !important;
 }
 
 /* EXCEPCIÓN 1: Elementos en el header con texto blanco */
@@ -62,7 +63,7 @@ header p {
   color: #ffffff !important;
 }
 
-/* EXCEPCIÓN 2: Texto en botones primarios (con fondo primary) */
+/* EXCEPCIÓN 2: Texto en botones primarios */
 button.bg-primary,
 button.bg-primary-dark,
 .bg-primary *,
@@ -74,11 +75,31 @@ a.bg-primary-dark {
 
 /* EXCEPCIÓN 3: Texto explícitamente marcado como blanco */
 .text-white,
-.text-white * {
+.text-white *,
+.text-white h1,
+.text-white h2,
+.text-white h3,
+.text-white h4,
+.text-white h5,
+.text-white h6,
+.text-white p,
+.text-white span {
   color: #ffffff !important;
 }
 
-/* EXCEPCIÓN 4: Mantener colores de estado (success, error, etc) */
+/* EXCEPCIÓN 4: Fondos con gradiente (página de login) */
+.bg-gradient-to-br h1,
+.bg-gradient-to-br h2,
+.bg-gradient-to-br h3,
+.bg-gradient-to-br h4,
+.bg-gradient-to-br h5,
+.bg-gradient-to-br h6,
+.bg-gradient-to-br p,
+.bg-gradient-to-br span {
+  color: #ffffff !important;
+}
+
+/* EXCEPCIÓN 5: Mantener colores de estado */
 .text-green-600,
 .text-red-600,
 .text-blue-600,
