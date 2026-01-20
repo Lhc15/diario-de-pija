@@ -7,6 +7,7 @@ import { Eye, X, Plus, Edit2, Check } from 'lucide-react';
 import { Meal, Workout, GymSession, ScheduledWorkout } from '@/lib/types';
 import ScheduleWorkoutModal from '@/components/ScheduleWorkoutModal';
 import GymSessionModal from '@/components/GymSessionModal';
+import EditMealNameModal from '@/components/EditMealNameModal';
 
 type Activity = {
   id: string;
@@ -26,6 +27,8 @@ export default function DiarioPage() {
   const [sessionWorkout, setSessionWorkout] = useState<Workout | undefined>();
   const [editingTime, setEditingTime] = useState<string | null>(null);
   const [newTime, setNewTime] = useState('');
+  const [editingMealName, setEditingMealName] = useState<string | null>(null);
+  const [mealToEdit, setMealToEdit] = useState<Meal | null>(null);
 
   if (!userData) {
     return (
@@ -162,6 +165,23 @@ export default function DiarioPage() {
     setEditingTime(null);
   };
 
+  const handleEditMealName = (meal: Meal) => {
+    setMealToEdit(meal);
+    setEditingMealName(meal.id);
+  };
+
+  const handleSaveMealName = (newName: string) => {
+    if (!mealToEdit) return;
+    
+    const updatedMeals = { ...userData.meals };
+    updatedMeals[todayKey] = updatedMeals[todayKey].map(m =>
+      m.id === mealToEdit.id ? { ...m, name: newName } : m
+    );
+    updateUserData({ ...userData, meals: updatedMeals });
+    setEditingMealName(null);
+    setMealToEdit(null);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header con fecha */}
@@ -235,6 +255,7 @@ export default function DiarioPage() {
                   onToggle={() => toggleMealComplete(meal.id)}
                   onView={() => setSelectedMeal(meal)}
                   onEditTime={() => handleEditTime(activity.id, meal.time)}
+                  onEditName={() => handleEditMealName(meal)}
                   isEditingTime={editingTime === activity.id}
                   newTime={newTime}
                   setNewTime={setNewTime}
@@ -291,6 +312,18 @@ export default function DiarioPage() {
           onClose={() => setSessionWorkout(undefined)}
         />
       )}
+
+      {/* Modal de editar nombre de comida */}
+      {editingMealName && mealToEdit && (
+        <EditMealNameModal
+          currentName={mealToEdit.name}
+          onSave={handleSaveMealName}
+          onClose={() => {
+            setEditingMealName(null);
+            setMealToEdit(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -300,6 +333,7 @@ function MealCard({
   onToggle,
   onView,
   onEditTime,
+  onEditName,  // ← Esta línea debe existir
   isEditingTime,
   newTime,
   setNewTime,
@@ -311,6 +345,7 @@ function MealCard({
   onToggle: () => void;
   onView: () => void;
   onEditTime: () => void;
+  onEditName: () => void;
   isEditingTime: boolean;
   newTime: string;
   setNewTime: (time: string) => void;
@@ -355,7 +390,18 @@ function MealCard({
           <span className="font-semibold text-sm">{meal.type}</span>
           {meal.completed && <span className="text-green-600">✓</span>}
         </div>
-        <p className="text-xs text-gray-600">{meal.name}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-gray-600">{meal.name}</p>
+          {!isReadOnly && (
+            <button 
+              onClick={onEditName} 
+              className="text-gray-400 hover:text-primary"
+              title="Editar nombre"
+            >
+              <Edit2 className="w-3 h-3" />
+            </button>
+          )}
+        </div>
       </div>
       <button
         onClick={onView}

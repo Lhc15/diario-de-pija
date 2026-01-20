@@ -14,6 +14,7 @@ const initEmptyUserData = (userId: string): Omit<UserData, 'userId'> => ({
   measurements: [],
   nutritionist: {
     nextAppointment: '',
+    
     appointments: []
   },
   dailySummary: {},
@@ -257,13 +258,13 @@ export const USERS = {
     username: 'Miguel',
     password: 'notengoflotadoresya',
     displayName: 'Miguel',
-    avatar: '🏊‍♂️'
+    avatar: '😈'
   },
   lorena: {
     id: 'lorena' as UserId,
     username: 'Lorena',
     password: 'caderitasdeescandalo',
     displayName: 'Lorena',
-    avatar: '💃'
+    avatar: '💋'
   }
 };

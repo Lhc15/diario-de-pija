@@ -98,8 +98,8 @@ export default function LoginPage() {
             required
           >
             <option value="">Selecciona</option>
-            <option value="Miguel">🏊‍♂️ Miguel</option>
-            <option value="Lorena">💃 Lorena</option>
+            <option value="Miguel">😈 Miguel</option>
+            <option value="Lorena">💋 Lorena</option>
           </select>
         </div>
         

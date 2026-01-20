@@ -2,7 +2,7 @@
 
 :root {
   --background: #f5f5f7;
-  --foreground: #171717;
+  --foreground: #000000;
   --primary: #791732;
   --primary-dark: #791732;
 }
@@ -31,17 +31,62 @@ body {
   padding: 0;
 }
 
-/* Todos los h en negro por defecto */
-h1, h2, h3, h4, h5, h6 {
+/* Todos los elementos de texto en negro por defecto */
+h1, h2, h3, h4, h5, h6, 
+label, 
+input, 
+textarea, 
+select,
+p,
+span,
+div {
   color: #000000 !important;
 }
 
-/* EXCEPCIÓN: h del header en blanco */
+/* Inputs y campos de formulario con texto negro */
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important; /* gray-500 para placeholders */
+}
+
+/* EXCEPCIÓN 1: Elementos en el header con texto blanco */
 header h1, 
 header h2, 
 header h3, 
 header h4, 
 header h5, 
-header h6 {
+header h6,
+header button,
+header span,
+header p {
   color: #ffffff !important;
+}
+
+/* EXCEPCIÓN 2: Texto en botones primarios (con fondo primary) */
+button.bg-primary,
+button.bg-primary-dark,
+.bg-primary *,
+.bg-primary-dark *,
+a.bg-primary,
+a.bg-primary-dark {
+  color: #ffffff !important;
+}
+
+/* EXCEPCIÓN 3: Texto explícitamente marcado como blanco */
+.text-white,
+.text-white * {
+  color: #ffffff !important;
+}
+
+/* EXCEPCIÓN 4: Mantener colores de estado (success, error, etc) */
+.text-green-600,
+.text-red-600,
+.text-blue-600,
+.text-yellow-600,
+.text-purple-600,
+.text-primary,
+.text-gray-400,
+.text-gray-500,
+.text-gray-600 {
+  color: inherit !important;
 }
