@@ -33,21 +33,21 @@ body {
 
 /* Todos los h en negro por defecto */
 h1, h2, h3, h4, h5, h6 {
-  color: #000000 !important;
+  color: #000000;
 }
 
-/* Labels e inputs en negro (sin afectar divs globalmente) */
+/* Labels e inputs en negro */
 label, 
 input, 
 textarea, 
 select {
-  color: #000000 !important;
+  color: #000000;
 }
 
 /* Inputs y campos de formulario con texto negro */
 input::placeholder,
 textarea::placeholder {
-  color: #6b7280 !important;
+  color: #6b7280;
 }
 
 /* EXCEPCIÓN 1: Elementos en el header con texto blanco */
@@ -66,8 +66,8 @@ header p {
 /* EXCEPCIÓN 2: Texto en botones primarios */
 button.bg-primary,
 button.bg-primary-dark,
-.bg-primary *,
-.bg-primary-dark *,
+.bg-primary span,
+.bg-primary-dark span,
 a.bg-primary,
 a.bg-primary-dark {
   color: #ffffff !important;
@@ -75,7 +75,6 @@ a.bg-primary-dark {
 
 /* EXCEPCIÓN 3: Texto explícitamente marcado como blanco */
 .text-white,
-.text-white *,
 .text-white h1,
 .text-white h2,
 .text-white h3,
@@ -83,23 +82,33 @@ a.bg-primary-dark {
 .text-white h5,
 .text-white h6,
 .text-white p,
-.text-white span {
+.text-white span,
+.text-white div {
   color: #ffffff !important;
 }
 
-/* EXCEPCIÓN 4: Fondos con gradiente (página de login) */
-.bg-gradient-to-br h1,
-.bg-gradient-to-br h2,
-.bg-gradient-to-br h3,
-.bg-gradient-to-br h4,
-.bg-gradient-to-br h5,
-.bg-gradient-to-br h6,
-.bg-gradient-to-br p,
-.bg-gradient-to-br span {
+/* EXCEPCIÓN 4: Fondos con gradiente (fuera de formularios blancos) */
+.bg-gradient-to-br > h1,
+.bg-gradient-to-br > h2,
+.bg-gradient-to-br > h3,
+.bg-gradient-to-br > h4,
+.bg-gradient-to-br > h5,
+.bg-gradient-to-br > h6,
+.bg-gradient-to-br > p,
+.bg-gradient-to-br > div:not(.bg-white) {
   color: #ffffff !important;
 }
 
-/* EXCEPCIÓN 5: Mantener colores de estado */
+/* EXCEPCIÓN 5: Formularios con fondo blanco = texto negro */
+.bg-white label,
+.bg-white input,
+.bg-white select,
+.bg-white textarea,
+.bg-white p {
+  color: #000000 !important;
+}
+
+/* EXCEPCIÓN 6: Mantener colores de estado */
 .text-green-600,
 .text-red-600,
 .text-blue-600,

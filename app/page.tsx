@@ -79,9 +79,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-primary-dark flex flex-col items-center justify-center text-white p-4">
       <div className="text-7xl mb-4 animate-bounce">🥗</div>
-      <h1 className="text-3xl font-bold text-center mb-2">Diario de una</h1>
-      <h1 className="text-3xl font-bold text-center mb-4">Pija de Urba</h1>
-      <p className="text-xl mb-8">¿Quién anda por aquí?</p>
+      <h1 className="text-3xl font-bold text-center mb-2 text-white">Diario de una</h1>
+      <h1 className="text-3xl font-bold text-center mb-4 text-white">Pija de Urba</h1>
+      <p className="text-xl mb-8 text-white">¿Quién anda por aquí?</p>
       
       <form 
         onSubmit={handleSubmit} 
@@ -90,12 +90,11 @@ export default function LoginPage() {
         }`}
       >
         <div className="mb-4">
-          <label className="block font-semibold mb-2" style={{ color: '#000000' }}>Usuario</label>
+          <label className="block font-semibold mb-2">Usuario</label>
           <select
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-            style={{ color: '#000000' }}
             required
           >
             <option value="">Selecciona</option>
@@ -105,20 +104,19 @@ export default function LoginPage() {
         </div>
         
         <div className="mb-6">
-          <label className="block font-semibold mb-2" style={{ color: '#000000' }}>Contraseña</label>
+          <label className="block font-semibold mb-2">Contraseña</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-            style={{ color: '#000000' }}
             placeholder="Tu contraseña"
             required
           />
         </div>
         
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-sm" style={{ color: '#b91c1c' }}>
+          <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -130,7 +128,7 @@ export default function LoginPage() {
           Entrar 🚀
         </button>
         
-        <p className="text-center text-xs mt-4" style={{ color: '#6b7280' }}>
+        <p className="text-center text-xs text-gray-500 mt-4">
           ¿Olvidaste tu contraseña?<br/>
           ¡Pídesela a tu compañero de dieta! 🤷
         </p>
