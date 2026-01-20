@@ -52,7 +52,7 @@ export interface Workout {
   type: 'gym' | 'other';
   muscleGroup?: string;
   lastSession?: string;
-  exercises?: Exercise[];  // ← DEBE ESTAR ESTA LÍNEA
+  exercises?: Exercise[];
 }
 
 export interface OtherSportRecord {
@@ -122,19 +122,22 @@ export interface UserData {
   dietPlan: DietPlan | null;
   meals: Record<string, Meal[]>; // dateKey -> meals
   workouts: Workout[];
-  gymSessions: GymSession[]; // ← ARRAY, no objeto
-  otherSports: OtherSportRecord[]; // ← Cambiado de otherSportRecords
+  gymSessions: GymSession[];
+  otherSports: OtherSportRecord[];
   scheduledWorkouts: Record<string, ScheduledWorkout[]>; // dateKey -> scheduled workouts
   weight: WeightRecord[];
   measurements: MeasurementRecord[];
   nutritionist: Nutritionist;
   dailySummary: Record<string, DailySummary>;
   stats: Stats;
+  customGreetings?: string[]; // Saludos personalizados
 }
+
 export interface ScheduledWorkout {
   workoutId: string;
   time: string; // HH:mm
 }
+
 // Estado de la app
 export interface AppState {
   currentUser: UserId | null;

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAppStore, USERS } from '@/lib/store';
 import UserSwitcher from '@/components/UserSwitcher';
+import ManageGreetingsModal from '@/components/ManageGreetingsModal';
 import { 
   BookOpen, 
   Dumbbell, 
@@ -15,7 +16,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
-const GREETINGS = [
+const DEFAULT_GREETINGS = [
   'Hola cremru',
   'Bondia gorda traicionera',
   'TCA entrando al chat',
@@ -32,10 +33,11 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, currentUser, viewingUser, backToMyApp } = useAppStore();
+  const { isAuthenticated, currentUser, viewingUser, backToMyApp, userData, updateUserData } = useAppStore();
   
   const [greeting, setGreeting] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [showGreetingsModal, setShowGreetingsModal] = useState(false);
 
   // Verificar autenticación
   useEffect(() => {
@@ -47,11 +49,14 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, router]);
 
-  // Saludo aleatorio
+  // Saludo aleatorio (usa custom o default)
   useEffect(() => {
-    const randomGreeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    const greetings = userData?.customGreetings && userData.customGreetings.length > 0
+      ? userData.customGreetings
+      : DEFAULT_GREETINGS;
+    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
     setGreeting(randomGreeting);
-  }, []);
+  }, [userData?.customGreetings]);
 
   if (!isAuthenticated || !currentUser) {
     return (
@@ -76,7 +81,7 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <header className="bg-primary text-white sticky top-0 z-40 shadow-lg">
+      <header className="bg-primary sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {isReadOnly && (
@@ -84,11 +89,11 @@ export default function DashboardLayout({
                 onClick={backToMyApp}
                 className="p-2 hover:bg-white/20 rounded-full transition"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5 text-white" />
               </button>
             )}
             <div>
-              <h1 className="text-lg md:text-xl font-bold">
+              <h1 className="text-lg md:text-xl font-bold text-white">
                 {isReadOnly ? (
                   <span className="flex items-center gap-2">
                     👁️ App de {activeUserData.displayName}
@@ -108,7 +113,7 @@ export default function DashboardLayout({
               onClick={() => setShowSettings(!showSettings)}
               className="p-2 hover:bg-white/20 rounded-full transition"
             >
-              <Settings className="w-6 h-6" />
+              <Settings className="w-6 h-6 text-white" />
             </button>
           )}
         </div>
@@ -165,84 +170,119 @@ export default function DashboardLayout({
 
 function SettingsModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const { currentUser, logout } = useAppStore();
+  const { currentUser, logout, userData, updateUserData } = useAppStore();
+  const [showGreetingsModal, setShowGreetingsModal] = useState(false);
   
-  if (!currentUser) return null;
+  if (!currentUser || !userData) return null;
   
   const user = USERS[currentUser];
+  const greetings = userData.customGreetings && userData.customGreetings.length > 0
+    ? userData.customGreetings
+    : DEFAULT_GREETINGS;
 
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
+  const handleSaveGreetings = (newGreetings: string[]) => {
+    updateUserData({
+      ...userData,
+      customGreetings: newGreetings,
+    });
+  };
+
   return (
-    <div 
-      className="fixed inset-0 bg-black/50 flex items-end z-50 backdrop-blur-sm animate-fadeIn" 
-      onClick={onClose}
-    >
+    <>
       <div 
-        className="bg-white rounded-t-3xl w-full max-w-2xl mx-auto max-h-[80vh] overflow-y-auto animate-slideUp" 
-        onClick={e => e.stopPropagation()}
+        className="fixed inset-0 bg-black/50 flex items-end z-50 backdrop-blur-sm animate-fadeIn" 
+        onClick={onClose}
       >
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between rounded-t-3xl">
-          <h2 className="text-xl font-bold">Ajustes</h2>
-          <button 
-            onClick={onClose} 
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            ✕
-          </button>
-        </div>
-        
-        <div className="p-6 space-y-6">
-          <div className="border-b pb-4">
-            <h3 className="font-semibold mb-2">👤 Perfil</h3>
-            <p className="text-sm mb-2">{user.displayName} {user.avatar}</p>
+        <div 
+          className="bg-white rounded-t-3xl w-full max-w-2xl mx-auto max-h-[80vh] overflow-y-auto animate-slideUp" 
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between rounded-t-3xl">
+            <h2 className="text-xl font-bold">Ajustes</h2>
             <button 
-              onClick={handleLogout}
-              className="text-red-600 text-sm font-medium hover:underline"
+              onClick={onClose} 
+              className="p-2 hover:bg-gray-100 rounded-full transition"
             >
-              Cerrar sesión
+              ✕
             </button>
           </div>
+          
+          <div className="p-6 space-y-6">
+            <div className="border-b pb-4">
+              <h3 className="font-semibold mb-2">👤 Perfil</h3>
+              <p className="text-sm mb-2">{user.displayName} {user.avatar}</p>
+              <button 
+                onClick={handleLogout}
+                className="text-red-600 text-sm font-medium hover:underline"
+              >
+                Cerrar sesión
+              </button>
+            </div>
 
-          <div className="border-b pb-4">
-            <h3 className="font-semibold mb-2">🎭 Saludos</h3>
-            <div className="bg-gray-50 rounded p-3 text-xs space-y-1 max-h-32 overflow-y-auto">
-              {GREETINGS.map((g, i) => <p key={i}>• {g}</p>)}
+            <div className="border-b pb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">🎭 Saludos</h3>
+                <button
+                  onClick={() => setShowGreetingsModal(true)}
+                  className="text-primary text-sm font-medium hover:underline"
+                >
+                  Gestionar
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded p-3 text-xs space-y-1 max-h-32 overflow-y-auto">
+                {greetings.map((g, i) => <p key={i}>• {g}</p>)}
+              </div>
+              {userData.customGreetings && userData.customGreetings.length > 0 && (
+                <p className="text-xs text-gray-500 mt-2">
+                  ✨ Usando saludos personalizados
+                </p>
+              )}
+            </div>
+
+            <div className="border-b pb-4">
+              <h3 className="font-semibold mb-2">🎨 Color</h3>
+              <p className="text-sm text-primary">● #791732</p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">ℹ️ Info</h3>
+              <p className="text-xs text-gray-600">Versión 1.0</p>
+              <p className="text-xs text-gray-600">Diario de una Pija de Urba</p>
             </div>
           </div>
-
-          <div className="border-b pb-4">
-            <h3 className="font-semibold mb-2">🎨 Color</h3>
-            <p className="text-sm text-primary">● #2596be</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2">ℹ️ Info</h3>
-            <p className="text-xs text-gray-600">Versión 1.0</p>
-            <p className="text-xs text-gray-600">Diario de una Pija de Urba</p>
-          </div>
         </div>
+
+        <style jsx>{`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+          }
+          .animate-slideUp {
+            animation: slideUp 0.3s ease-out;
+          }
+        `}</style>
       </div>
 
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-      `}</style>
-    </div>
+      {/* Modal de gestión de saludos */}
+      {showGreetingsModal && (
+        <ManageGreetingsModal
+          currentGreetings={greetings}
+          onSave={handleSaveGreetings}
+          onClose={() => setShowGreetingsModal(false)}
+        />
+      )}
+    </>
   );
 }
