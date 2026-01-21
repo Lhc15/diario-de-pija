@@ -14,7 +14,6 @@ const initEmptyUserData = (userId: string): Omit<UserData, 'userId'> => ({
   measurements: [],
   nutritionist: {
     nextAppointment: '',
-    
     appointments: []
   },
   dailySummary: {},
@@ -22,7 +21,9 @@ const initEmptyUserData = (userId: string): Omit<UserData, 'userId'> => ({
     totalCompletedDays: 0,
     currentStreak: 0,
     bestStreak: 0
-  }
+  },
+  customGreetings: undefined,
+  trampEvents: []
 });
 
 // Cargar datos del usuario desde Supabase
@@ -81,7 +82,9 @@ const loadFromSupabase = async (userId: string): Promise<UserData | null> => {
         totalCompletedDays: 0,
         currentStreak: 0,
         bestStreak: 0
-      }
+      },
+      customGreetings: data.custom_greetings || undefined,
+      trampEvents: data.tramp_events || []
     };
   } catch (error) {
     console.error('Error en loadFromSupabase:', error);
@@ -96,7 +99,9 @@ const saveToSupabase = async (userId: string, userData: UserData) => {
     console.log('Datos a guardar:', {
       workouts: userData.workouts,
       meals: Object.keys(userData.meals).length + ' días',
-      gymSessions: userData.gymSessions.length
+      gymSessions: userData.gymSessions.length,
+      customGreetings: userData.customGreetings?.length || 0,
+      trampEvents: userData.trampEvents?.length || 0
     });
 
     const { data, error } = await supabase
@@ -113,6 +118,8 @@ const saveToSupabase = async (userId: string, userData: UserData) => {
         nutritionist: userData.nutritionist,
         daily_summary: userData.dailySummary,
         stats: userData.stats,
+        custom_greetings: userData.customGreetings,
+        tramp_events: userData.trampEvents
       })
       .eq('user_id', userId)
       .select();
@@ -122,7 +129,7 @@ const saveToSupabase = async (userId: string, userData: UserData) => {
       throw error;
     }
 
-    console.log('✅ Datos guardados correctamente:', data);
+    console.log('✅ Datos guardados correctamente');
     return data;
   } catch (error) {
     console.error('❌ Error en saveToSupabase:', error);
@@ -219,7 +226,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ userData: updated });
     
     // Guardar en Supabase en background
-    await saveToSupabase(currentUser, updated);
+    try {
+      await saveToSupabase(currentUser, updated);
+    } catch (error) {
+      console.error('Error guardando cambios:', error);
+    }
   },
 
   loadUserData: async (userId: UserId) => {
