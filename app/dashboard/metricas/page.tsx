@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAppStore, useIsReadOnly } from '@/lib/store';
-import { Scale, Ruler, Plus, TrendingDown, TrendingUp, Minus, Calendar, Award, AlertCircle } from 'lucide-react';
+import { Scale, Ruler, Plus, TrendingDown, TrendingUp, Minus, Calendar, Award, AlertCircle, PartyPopper } from 'lucide-react';
 import { WeightRecord, MeasurementRecord } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import WeightModal from '@/components/WeightModal';
@@ -79,9 +80,18 @@ export default function MetricasPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold mb-2">Métricas</h1>
-        <p className="text-gray-600">Tu evolución física</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Métricas</h1>
+          <p className="text-gray-600">Tu evolución física</p>
+        </div>
+        <Link
+          href="/dashboard/la-trampa"
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold transition flex items-center gap-2 shadow-lg"
+        >
+          <PartyPopper className="w-5 h-5" />
+          La Trampa
+        </Link>
       </div>
 
       {/* Cards destacadas: Nutricionista y Días Logrados */}

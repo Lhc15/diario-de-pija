@@ -131,6 +131,28 @@ export interface UserData {
   dailySummary: Record<string, DailySummary>;
   stats: Stats;
   customGreetings?: string[]; // Saludos personalizados
+  trampEvents?: TrampEvent[]; // Eventos de La Trampa
+}
+
+// La Trampa - Blog de eventos con fotos
+export interface TrampEvent {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: string; // YYYY-MM-DD
+  color: string; // Color pastel para el card
+  photos: TrampPhoto[];
+  createdBy: UserId;
+  createdAt: string;
+}
+
+export interface TrampPhoto {
+  id: string;
+  eventId: string;
+  imageUrl: string; // URL de la imagen en Supabase Storage
+  uploadedBy: UserId;
+  uploadedAt: string; // ISO timestamp
+  caption?: string;
 }
 
 export interface ScheduledWorkout {
