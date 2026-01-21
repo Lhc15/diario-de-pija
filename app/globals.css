@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* Updated: 2026-01-20 - Force cache refresh */
+
 :root {
   --background: #f5f5f7;
   --foreground: #000000;
