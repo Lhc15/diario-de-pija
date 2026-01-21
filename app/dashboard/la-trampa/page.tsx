@@ -1,22 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore, useIsReadOnly, USERS } from '@/lib/store';
-import { Plus, Camera, Calendar } from 'lucide-react';
+import { Plus, Camera, Calendar, RefreshCw } from 'lucide-react';
 import { generatePastelColor, generateId } from '@/lib/tramp-utils';
 import { TrampEvent, TrampPhoto } from '@/lib/types';
 import CreateEventModal from '@/components/CreateEventModal';
 import UploadPhotoModal from '@/components/UploadPhotoModal';
-import { supabase } from '@/lib/supabase';
+import { 
+  loadTrampEvents, 
+  createTrampEvent, 
+  uploadTrampPhoto, 
+  uploadTrampImage 
+} from '@/lib/tramp';
 
 export default function LaTrampPage() {
-  const { userData, updateUserData, currentUser } = useAppStore();
+  const { currentUser } = useAppStore();
   const isReadOnly = useIsReadOnly();
   
+  const [events, setEvents] = useState<TrampEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [uploadingToEvent, setUploadingToEvent] = useState<string | null>(null);
 
-  if (!userData || !currentUser) {
+  // Cargar eventos al montar
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    setIsLoading(true);
+    const loaded = await loadTrampEvents();
+    setEvents(loaded);
+    setIsLoading(false);
+  };
+
+  if (!currentUser) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
         <p>Cargando...</p>
@@ -24,62 +43,54 @@ export default function LaTrampPage() {
     );
   }
 
-  const events = userData.trampEvents || [];
-
-  const handleCreateEvent = (title: string, description: string, startDate: string) => {
-    const newEvent: TrampEvent = {
+  const handleCreateEvent = async (title: string, description: string, startDate: string) => {
+    const newEvent: Omit<TrampEvent, 'photos'> = {
       id: generateId(),
       title,
       description: description || undefined,
       startDate,
       color: generatePastelColor(title + startDate),
-      photos: [],
       createdBy: currentUser,
       createdAt: new Date().toISOString(),
     };
 
-    updateUserData({
-      ...userData,
-      trampEvents: [...events, newEvent],
-    });
+    const success = await createTrampEvent(newEvent);
+    
+    if (success) {
+      await loadEvents(); // Recargar eventos
+    } else {
+      alert('Error al crear el evento');
+    }
   };
 
   const handleUploadPhoto = async (eventId: string, file: File, caption?: string) => {
     try {
-      // Subir imagen a Supabase Storage
-      const fileName = `${eventId}/${generateId()}-${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('tramp-photos')
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      // Obtener URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('tramp-photos')
-        .getPublicUrl(fileName);
+      const photoId = generateId();
+      
+      // Subir imagen a Storage
+      const imageUrl = await uploadTrampImage(eventId, file, photoId);
+      
+      if (!imageUrl) {
+        throw new Error('Error al subir la imagen');
+      }
 
       // Crear registro de foto
       const newPhoto: TrampPhoto = {
-        id: generateId(),
+        id: photoId,
         eventId,
-        imageUrl: publicUrl,
+        imageUrl,
         uploadedBy: currentUser,
         uploadedAt: new Date().toISOString(),
         caption,
       };
 
-      // Actualizar evento
-      const updatedEvents = events.map(event =>
-        event.id === eventId
-          ? { ...event, photos: [...event.photos, newPhoto] }
-          : event
-      );
-
-      updateUserData({
-        ...userData,
-        trampEvents: updatedEvents,
-      });
+      const success = await uploadTrampPhoto(newPhoto);
+      
+      if (success) {
+        await loadEvents(); // Recargar eventos con las nuevas fotos
+      } else {
+        throw new Error('Error al guardar la foto');
+      }
     } catch (error) {
       console.error('Error uploading photo:', error);
       throw error;
@@ -94,19 +105,32 @@ export default function LaTrampPage() {
           <h1 className="text-2xl font-bold mb-2">🎉 La Trampa</h1>
           <p className="text-gray-600">Momentos especiales compartidos</p>
         </div>
-        {!isReadOnly && (
+        <div className="flex gap-2">
           <button
-            onClick={() => setShowCreateEvent(true)}
-            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
+            onClick={loadEvents}
+            className="p-2 hover:bg-gray-100 rounded-lg transition"
+            title="Recargar"
           >
-            <Plus className="w-5 h-5" />
-            Nuevo evento
+            <RefreshCw className="w-5 h-5" />
           </button>
-        )}
+          {!isReadOnly && (
+            <button
+              onClick={() => setShowCreateEvent(true)}
+              className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Nuevo evento
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Eventos */}
-      {events.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando eventos...</p>
+        </div>
+      ) : events.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📸</div>
           <h3 className="text-lg font-bold mb-2">No hay eventos todavía</h3>
@@ -124,9 +148,10 @@ export default function LaTrampPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {events
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map((event) => (
+          {events.map((event) => {
+            const creator = USERS[event.createdBy];
+            
+            return (
               <div
                 key={event.id}
                 className="rounded-2xl p-6 shadow-lg"
@@ -139,14 +164,19 @@ export default function LaTrampPage() {
                     {event.description && (
                       <p className="text-sm text-gray-700 mb-2">{event.description}</p>
                     )}
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Calendar className="w-3 h-3" />
+                    <div className="flex items-center gap-4 text-xs text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>
+                          Desde {new Date(event.startDate).toLocaleDateString('es-ES', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
                       <span>
-                        Desde {new Date(event.startDate).toLocaleDateString('es-ES', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
+                        Creado por {creator?.displayName} {creator?.avatar}
                       </span>
                     </div>
                   </div>
@@ -171,49 +201,48 @@ export default function LaTrampPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {event.photos
-                      .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
-                      .map((photo) => {
-                        const user = USERS[photo.uploadedBy];
-                        const date = new Date(photo.uploadedAt);
-                        
-                        return (
-                          <div key={photo.id} className="bg-white/80 rounded-lg p-4">
-                            {/* Photo metadata */}
-                            <div className="mb-2">
-                              <p className="font-semibold text-sm">
-                                {user.displayName} {user.avatar}
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                {date.toLocaleDateString('es-ES', {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
-                            </div>
-                            
-                            {/* Photo */}
-                            <img
-                              src={photo.imageUrl}
-                              alt={photo.caption || 'Foto del evento'}
-                              className="w-full rounded-lg object-cover"
-                              loading="lazy"
-                            />
-                            
-                            {/* Caption */}
-                            {photo.caption && (
-                              <p className="text-sm text-gray-700 mt-2">{photo.caption}</p>
-                            )}
+                    {event.photos.map((photo) => {
+                      const uploader = USERS[photo.uploadedBy];
+                      const date = new Date(photo.uploadedAt);
+                      
+                      return (
+                        <div key={photo.id} className="bg-white/80 rounded-lg p-4">
+                          {/* Photo metadata */}
+                          <div className="mb-2">
+                            <p className="font-semibold text-sm">
+                              {uploader?.displayName} {uploader?.avatar}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {date.toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
                           </div>
-                        );
-                      })}
+                          
+                          {/* Photo */}
+                          <img
+                            src={photo.imageUrl}
+                            alt={photo.caption || 'Foto del evento'}
+                            className="w-full rounded-lg object-cover"
+                            loading="lazy"
+                          />
+                          
+                          {/* Caption */}
+                          {photo.caption && (
+                            <p className="text-sm text-gray-700 mt-2">{photo.caption}</p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
-            ))}
+            );
+          })}
         </div>
       )}
 
