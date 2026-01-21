@@ -37,13 +37,30 @@ export async function loadTrampEvents(): Promise<TrampEvent[]> {
           console.error('Error loading photos for event:', event.id, photosError);
         }
 
+        // Mapear fotos de snake_case a camelCase
+        const mappedPhotos: TrampPhoto[] = (photos || []).map((photo: {
+          id: string;
+          event_id: string;
+          image_url: string;
+          uploaded_by: string;
+          uploaded_at: string;
+          caption: string | null;
+        }) => ({
+          id: photo.id,
+          eventId: photo.event_id,
+          imageUrl: photo.image_url,
+          uploadedBy: photo.uploaded_by,
+          uploadedAt: photo.uploaded_at,
+          caption: photo.caption || undefined,
+        }));
+
         return {
           id: event.id,
           title: event.title,
           description: event.description || undefined,
           startDate: event.start_date,
           color: event.color,
-          photos: photos || [],
+          photos: mappedPhotos,
           createdBy: event.created_by,
           createdAt: event.created_at,
         } as TrampEvent;
