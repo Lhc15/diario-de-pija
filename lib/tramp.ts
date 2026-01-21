@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { TrampEvent, TrampPhoto } from './types';
+import { TrampEvent, TrampPhoto, UserId } from './types';
 
 // Cargar todos los eventos
 export async function loadTrampEvents(): Promise<TrampEvent[]> {
@@ -49,7 +49,7 @@ export async function loadTrampEvents(): Promise<TrampEvent[]> {
           id: photo.id,
           eventId: photo.event_id,
           imageUrl: photo.image_url,
-          uploadedBy: photo.uploaded_by,
+          uploadedBy: photo.uploaded_by as UserId,
           uploadedAt: photo.uploaded_at,
           caption: photo.caption || undefined,
         }));
@@ -61,7 +61,7 @@ export async function loadTrampEvents(): Promise<TrampEvent[]> {
           startDate: event.start_date,
           color: event.color,
           photos: mappedPhotos,
-          createdBy: event.created_by,
+          createdBy: event.created_by as UserId,
           createdAt: event.created_at,
         } as TrampEvent;
       })
