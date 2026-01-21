@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAppStore, USERS } from '@/lib/store';
 import UserSwitcher from '@/components/UserSwitcher';
 import ManageGreetingsModal from '@/components/ManageGreetingsModal';
+import { loadSharedGreetings } from '@/lib/greetings';
 import { 
   BookOpen, 
   Dumbbell, 
@@ -33,7 +34,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, currentUser, viewingUser, backToMyApp, userData, updateUserData } = useAppStore();
+  const { isAuthenticated, currentUser, viewingUser, backToMyApp } = useAppStore();
   
   const [greeting, setGreeting] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -49,14 +50,16 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, router]);
 
-  // Saludo aleatorio (usa custom o default)
+  // Saludo aleatorio (cargar desde DB compartida)
   useEffect(() => {
-    const greetings = userData?.customGreetings && userData.customGreetings.length > 0
-      ? userData.customGreetings
-      : DEFAULT_GREETINGS;
-    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-    setGreeting(randomGreeting);
-  }, [userData?.customGreetings]);
+    const loadGreeting = async () => {
+      const greetings = await loadSharedGreetings();
+      const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+      setGreeting(randomGreeting);
+    };
+    
+    loadGreeting();
+  }, [showGreetingsModal]); // Recargar cuando se cierra el modal
 
   if (!isAuthenticated || !currentUser) {
     return (
@@ -170,26 +173,25 @@ export default function DashboardLayout({
 
 function SettingsModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const { currentUser, logout, userData, updateUserData } = useAppStore();
+  const { currentUser, logout } = useAppStore();
   const [showGreetingsModal, setShowGreetingsModal] = useState(false);
+  const [greetingsCount, setGreetingsCount] = useState(0);
   
-  if (!currentUser || !userData) return null;
+  useEffect(() => {
+    const loadCount = async () => {
+      const greetings = await loadSharedGreetings();
+      setGreetingsCount(greetings.length);
+    };
+    loadCount();
+  }, [showGreetingsModal]);
+  
+  if (!currentUser) return null;
   
   const user = USERS[currentUser];
-  const greetings = userData.customGreetings && userData.customGreetings.length > 0
-    ? userData.customGreetings
-    : DEFAULT_GREETINGS;
 
   const handleLogout = () => {
     logout();
     router.push('/');
-  };
-
-  const handleSaveGreetings = (newGreetings: string[]) => {
-    updateUserData({
-      ...userData,
-      customGreetings: newGreetings,
-    });
   };
 
   return (
@@ -226,7 +228,7 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
 
             <div className="border-b pb-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">🎭 Saludos</h3>
+                <h3 className="font-semibold">🎭 Saludos compartidos</h3>
                 <button
                   onClick={() => setShowGreetingsModal(true)}
                   className="text-primary text-sm font-medium hover:underline"
@@ -234,14 +236,11 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
                   Gestionar
                 </button>
               </div>
-              <div className="bg-gray-50 rounded p-3 text-xs space-y-1 max-h-32 overflow-y-auto">
-                {greetings.map((g, i) => <p key={i}>• {g}</p>)}
-              </div>
-              {userData.customGreetings && userData.customGreetings.length > 0 && (
-                <p className="text-xs text-gray-500 mt-2">
-                  ✨ Usando saludos personalizados
+              <div className="bg-gray-50 rounded p-3 text-sm">
+                <p className="text-gray-600">
+                  {greetingsCount} saludos compartidos entre Miguel y Lorena
                 </p>
-              )}
+              </div>
             </div>
 
             <div className="border-b pb-4">
@@ -278,8 +277,6 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
       {/* Modal de gestión de saludos */}
       {showGreetingsModal && (
         <ManageGreetingsModal
-          currentGreetings={greetings}
-          onSave={handleSaveGreetings}
           onClose={() => setShowGreetingsModal(false)}
         />
       )}
