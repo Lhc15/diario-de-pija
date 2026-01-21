@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAppStore, USERS } from '@/lib/store';
 import UserSwitcher from '@/components/UserSwitcher';
 import ManageGreetingsModal from '@/components/ManageGreetingsModal';
+import TrampNotifications from '@/components/TrampNotifications';
 import { loadSharedGreetings } from '@/lib/greetings';
 import { 
   BookOpen, 
@@ -124,6 +125,9 @@ export default function DashboardLayout({
 
       {/* User Switcher */}
       <UserSwitcher />
+
+      {/* Notificaciones de La Trampa */}
+      {!isReadOnly && <TrampNotifications />}
 
       {/* Main Content */}
       <main className="min-h-[calc(100vh-140px)]">

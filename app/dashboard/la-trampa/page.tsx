@@ -66,6 +66,11 @@ export default function LaTrampPage() {
   const handleUploadPhoto = async (eventId: string, file: File, caption?: string) => {
     try {
       const photoId = generateId();
+      const event = events.find(e => e.id === eventId);
+      
+      if (!event) {
+        throw new Error('Evento no encontrado');
+      }
       
       // Subir imagen a Storage
       const imageUrl = await uploadTrampImage(eventId, file, photoId);
@@ -84,7 +89,7 @@ export default function LaTrampPage() {
         caption,
       };
 
-      const success = await uploadTrampPhoto(newPhoto);
+      const success = await uploadTrampPhoto(newPhoto, event.title);
       
       if (success) {
         await loadEvents(); // Recargar eventos con las nuevas fotos

@@ -155,6 +155,19 @@ export interface TrampPhoto {
   caption?: string;
 }
 
+// Notificaciones de La Trampa
+export interface TrampNotification {
+  id: number;
+  userId: UserId;
+  type: 'new_event' | 'new_photo';
+  actorId: UserId;
+  eventId: string;
+  eventTitle: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export interface ScheduledWorkout {
   workoutId: string;
   time: string; // HH:mm

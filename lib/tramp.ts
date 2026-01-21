@@ -1,5 +1,11 @@
 import { supabase } from './supabase';
 import { TrampEvent, TrampPhoto, UserId } from './types';
+import { createTrampNotification } from './notifications';
+
+// Obtener el otro usuario
+function getOtherUser(currentUser: UserId): UserId {
+  return currentUser === 'miguel' ? 'lorena' : 'miguel';
+}
 
 // Cargar todos los eventos
 export async function loadTrampEvents(): Promise<TrampEvent[]> {
@@ -96,6 +102,16 @@ export async function createTrampEvent(
       return false;
     }
 
+    // Crear notificación para el otro usuario
+    const otherUser = getOtherUser(event.createdBy);
+    await createTrampNotification(
+      otherUser,
+      'new_event',
+      event.createdBy,
+      event.id,
+      event.title
+    );
+
     return true;
   } catch (error) {
     console.error('Error in createTrampEvent:', error);
@@ -105,7 +121,8 @@ export async function createTrampEvent(
 
 // Subir foto a un evento
 export async function uploadTrampPhoto(
-  photo: TrampPhoto
+  photo: TrampPhoto,
+  eventTitle: string
 ): Promise<boolean> {
   try {
     const { error } = await supabase
@@ -123,6 +140,16 @@ export async function uploadTrampPhoto(
       console.error('Error uploading photo:', error);
       return false;
     }
+
+    // Crear notificación para el otro usuario
+    const otherUser = getOtherUser(photo.uploadedBy);
+    await createTrampNotification(
+      otherUser,
+      'new_photo',
+      photo.uploadedBy,
+      photo.eventId,
+      eventTitle
+    );
 
     return true;
   } catch (error) {
