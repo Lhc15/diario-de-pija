@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Updated: 2026-01-20 - Force cache refresh */
+/* Updated: 2026-01-20 - No dark mode, fixed colors */
 
 :root {
   --background: #f5f5f7;
@@ -18,16 +18,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* NO DARK MODE - Colores fijos siempre */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #f5f5f7 !important;
+  color: #000000 !important;
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
@@ -35,7 +30,7 @@ body {
 
 /* Todos los h en negro por defecto */
 h1, h2, h3, h4, h5, h6 {
-  color: #000000;
+  color: #000000 !important;
 }
 
 /* Labels e inputs en negro */
@@ -43,13 +38,13 @@ label,
 input, 
 textarea, 
 select {
-  color: #000000;
+  color: #000000 !important;
 }
 
 /* Inputs y campos de formulario con texto negro */
 input::placeholder,
 textarea::placeholder {
-  color: #6b7280;
+  color: #6b7280 !important;
 }
 
 /* EXCEPCIÓN 1: Elementos en el header con texto blanco */
@@ -89,7 +84,7 @@ a.bg-primary-dark {
   color: #ffffff !important;
 }
 
-/* EXCEPCIÓN 4: Fondos con gradiente (fuera de formularios blancos) */
+/* EXCEPCIÓN 4: Fondos con gradiente (página de login) */
 .bg-gradient-to-br > h1,
 .bg-gradient-to-br > h2,
 .bg-gradient-to-br > h3,
@@ -121,4 +116,13 @@ a.bg-primary-dark {
 .text-gray-500,
 .text-gray-600 {
   color: inherit !important;
+}
+
+/* Forzar fondo claro en todos los elementos principales */
+#__next,
+html,
+body,
+main {
+  background-color: #f5f5f7 !important;
+  color: #000000 !important;
 }
